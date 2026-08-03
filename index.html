@@ -51,10 +51,25 @@
         mapImg.src = 'utvonal.png'; // Tedd be a terkep.jpg-t a HTML mellé GitHubra!
         mapImg.crossOrigin = "anonymous"; // GitHub Pages-en ez engedélyezi a biztonságos beolvasást
         
-        mapImg.onload = function() { ctx.drawImage(mapImg, 0, 0, 800, 600); gameActive = true; };
+        mapImg.onload = function() { 
+            // 1. Először letöröljük a vásznat teljesen tisztára (átlátszóra)
+            ctx.clearRect(0, 0, 800, 600);
+            
+            // 2. Kirajzoljuk a háttérképet a legalsó rétegre
+            ctx.drawImage(mapImg, 0, 0, 800, 600); 
+            
+            // 3. Opcionális: Ha az átlátszó PNG-den rajta van már a görbe út a fix RGB színnel,
+            // akkor itt készen is vagyunk! Ha programmal szeretnél rárajzolni pluszban egy utat, 
+            // akkor azt ide lehetne beilleszteni.
+            
+            gameActive = true; 
+        };
         
         // Ha nincs kép (helyi tesztelésnél), rajzol egy vékony görbe zöld vonalat, hogy lásd a működést:
+
+		
         mapImg.onerror = function() {
+            // Ha a terkep.jpg/png nem tölthető be, akkor sem hagyjuk üresen
             ctx.fillStyle = "#dfcb9e"; ctx.fillRect(0, 0, 800, 600);
             ctx.strokeStyle = `rgb(${TR},${TG},${TB})`; ctx.lineWidth = 14; ctx.lineCap = "round"; ctx.lineJoin = "round";
             ctx.beginPath(); ctx.moveTo(60, 540); ctx.quadraticCurveTo(200, 520, 200, 440); ctx.quadraticCurveTo(200, 300, 350, 300); ctx.bezierCurveTo(450, 300, 450, 450, 600, 350); ctx.lineTo(600, 140); ctx.lineTo(730, 60); ctx.stroke();
