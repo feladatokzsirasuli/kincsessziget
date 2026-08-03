@@ -6,18 +6,8 @@
     <style>
         body { font-family: sans-serif; background: #2c1d11; color: #f5eccd; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         #ui { display: flex; justify-content: space-between; width: 800px; margin-bottom: 5px; font-weight: bold; }
-        /* A JÁTÉKTÉR: Ide közvetlenül CSS-ből töltjük be a képedet, így GARANTÁLTAN látszódni fog */
-        #map { 
-            width: 800px; 
-            height: 600px; 
-            position: relative; 
-            border: 12px solid #5c3a21; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
-            overflow: hidden; 
-            background-image: url('terkep.png'); /* A saját képed neve */
-            background-size: 100% 100%;
-        }
-        /* A vászon láthatatlan lesz, csak a színellenőrzésre használjuk a háttérben */
+        /* KÖZVETLEN BIZTOS KÉPBETÖLTÉS A HÁTTÉRBE */
+        #map { width: 800px; height: 600px; position: relative; border: 12px solid #5c3a21; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden; background-image: url('terkep.png'); background-size: 100% 100%; }
         #cvs { position: absolute; top:0; left:0; z-index: 1; display: none; }
         #player { width: 40px; height: 40px; position: absolute; left: 40px; top: 520px; z-index: 10; display: flex; align-items: center; justify-content: center; }
         #player svg { width: 100%; height: 100%; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5)); }
@@ -54,10 +44,10 @@
         const player = document.getElementById('player'), quiz = document.getElementById('quiz'), qEl = document.getElementById('q'), optsEl = document.getElementById('opts'), scoreEl = document.getElementById('score'), msg = document.getElementById('msg'), cvs = document.getElementById('cvs'), ctx = cvs.getContext('2d', { willReadFrequently: true });
         let pLeft = 40, pTop = 520, score = 0, gameActive = false, activeObs = null;
 
-        // 1. ÁLLÍTSD BE AZ ÚTVONALAD PONTOS RGB SZÍNÉT (Pl. zöld: 46, 204, 113)
+        // 1. ÍRD ÁT IDE A TE SAJÁT ÚTVONALAD PONTOS RGB KÓDJÁT!
         const TR = 46, TG = 204, TB = 113; 
 
-        // 2. KÉP BETÖLTÉSE A LÁTHATATLAN MEMÓRIÁBA A SZÍNES ELLENŐRZÉSHEZ
+        // 2. KÉP BETÖLTÉSE A LÁTHATATLAN MEMÓRIÁBA
         const mapImg = new Image();
         mapImg.src = 'terkep.png'; 
         mapImg.crossOrigin = "anonymous"; 
@@ -79,7 +69,7 @@
             { q: "Melyik mozgás pályája egyenes vonalú, és a test egyenlő idők alatt egyenlő utakat tesz meg?", options: ["Egyenletesen változó mozgás", "Egyenes vonalú egyenletes mozgás", "Egyenletes körmozgás"], answer: 1 },
             { q: "Mi a sebesség alapvető SI mértékegysége?", options: ["km/h", "m/s", "m/s²"], answer: 1 },
             { q: "Ha egy autó 2 óra alatt 120 km-t tesz meg egyenletes sebességgel, mennyi a sebessége?", options: ["60 km/h", "240 km/h", "30 km/h"], answer: 0 },
-            { q: "Mit ad meg a gyorsulás?", options: ["A megtett utat", "A sebességváltozás gyorsaságát", "A test teljes tömeget"], answer: 1 },
+            { q: "Mit ad meg a gyorsulás?", options: ["A megtett utat", "A sebességváltozás gyorsaságát", "A test teljes tömege"], answer: 1 },
             { q: "Ha egy kerékpáros álló helyzetből indulva egyenletesen gyorsul, milyen mozgást végez?", options: ["Egyenes vonalú egyenletesen változó mozgást", "Egyenletes mozgást", "Rezgőmozgást"], answer: 0 }
         ];
 
@@ -94,7 +84,6 @@
             else if (e.key === 'ArrowRight') nLeft += 4;
             else return;
 
-            // 8-pontos könnyített ellenőrzés
             const checkPoints = [
                 {x: nLeft + 20, y: nTop + 20}, {x: nLeft, y: nTop}, {x: nLeft + 40, y: nTop},
                 {x: nLeft, y: nTop + 40}, {x: nLeft + 40, y: nTop + 40}, {x: nLeft + 20, y: nTop},
@@ -105,7 +94,7 @@
             for (let pt of checkPoints) {
                 if (pt.x >= 0 && pt.x <= 800 && pt.y >= 0 && pt.y <= 600) {
                     const pix = ctx.getImageData(pt.x, pt.y, 1, 1).data;
-                    if (pix[0] === TR && pix[1] === TG && pix[2] === TB) {
+                    if (pix === TR && pix === TG && pix === TB) {
                         safe = true;
                         break;
                     }
