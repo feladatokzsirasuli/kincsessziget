@@ -2,24 +2,35 @@
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <title>Fizika Kaland: A Szabadkézi Görbe Út</title>
+    <title>Fizika Kaland</title>
     <style>
         body { font-family: sans-serif; background: #2c1d11; color: #f5eccd; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         #ui { display: flex; justify-content: space-between; width: 800px; margin-bottom: 5px; font-weight: bold; }
-        #map { width: 800px; height: 600px; position: relative; border: 12px solid #5c3a21; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden; } 	
-        #cvs { position: absolute; top:0; left:0; z-index: 1; }
+        /* A JÁTÉKTÉR: Ide közvetlenül CSS-ből töltjük be a képedet, így GARANTÁLTAN látszódni fog */
+        #map { 
+            width: 800px; 
+            height: 600px; 
+            position: relative; 
+            border: 12px solid #5c3a21; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+            overflow: hidden; 
+            background-image: url('terkep.png'); /* A saját képed neve */
+            background-size: 100% 100%;
+        }
+        /* A vászon láthatatlan lesz, csak a színellenőrzésre használjuk a háttérben */
+        #cvs { position: absolute; top:0; left:0; z-index: 1; display: none; }
         #player { width: 40px; height: 40px; position: absolute; left: 40px; top: 520px; z-index: 10; display: flex; align-items: center; justify-content: center; }
         #player svg { width: 100%; height: 100%; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5)); }
         .obs { width: 30px; height: 30px; position: absolute; color: #c0392b; font-size: 24px; font-weight: bold; text-align: center; line-height: 30px; text-shadow: 1px 1px 3px #000; z-index: 5; }
-        #treasure { width: 35px; height: 35px; background: #f1c40f; border: 2px solid #d35400; position: absolute; left: 510px; top: 190px; z-index: 5; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 0 10px #f1c40f; }
+        #treasure { width: 35px; height: 35px; background: #f1c40f; border: 2px solid #d35400; position: absolute; right: 40px; top: 40px; z-index: 5; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 0 10px #f1c40f; }
         #quiz { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 450px; background: #34495e; color: white; padding: 20px; border-radius: 12px; display: none; text-align: center; z-index: 100; border: 3px solid #f1c40f; }
         .btn { background: #e67e22; color: white; border: none; padding: 10px; margin: 5px; font-size: 14px; cursor: pointer; border-radius: 5px; width: 90%; font-weight: bold; }
         #msg { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: bold; color: #f1c40f; text-shadow: 2px 2px #000; text-align: center; z-index: 110; width: 90%; pointer-events: none; }
     </style>
 </head>
 <body>
-    <h1>Fizika Kaland: Görbe Útvonal</h1>
-    <div id="ui"><div>Arany: <span id="score">0</span></div><div>Irányítás: Nyilakkal (Bármelyik pont érintheti az utat!)</div></div>
+    <h1>Fizika Kaland</h1>
+    <div id="ui"><div>Arany: <span id="score">0</span></div><div>Irányítás: Nyilakkal</div></div>
     <div id="map">
         <canvas id="cvs" width="800" height="600"></canvas>
         <div id="player">
@@ -31,64 +42,44 @@
             </svg>
         </div>
         <div id="treasure">👑</div>
-        <div class="obs" id="obs-0" style="left:490px; top:418px;">X</div>
-        <div class="obs" id="obs-1" style="left:424px; top:325px;">X</div>
-        <div class="obs" id="obs-2" style="left:668px; top:288px;">X</div>
-        <div class="obs" id="obs-3" style="left:545px; top:262px;">X</div>
-        <div class="obs" id="obs-4" style="left:310px; top:265px;">X</div>
+        <div class="obs" id="obs-0" style="left:180px; top:420px;">X</div>
+        <div class="obs" id="obs-1" style="left:260px; top:280px;">X</div>
+        <div class="obs" id="obs-2" style="left:420px; top:200px;">X</div>
+        <div class="obs" id="obs-3" style="left:530px; top:320px;">X</div>
+        <div class="obs" id="obs-4" style="left:640px; top:120px;">X</div>
         <div id="quiz"><h3 id="q">?</h3><div id="opts"></div></div>
         <div id="msg">Kattints a játékra, majd indulj a nyilakkal!</div>
     </div>
     <script>
         const player = document.getElementById('player'), quiz = document.getElementById('quiz'), qEl = document.getElementById('q'), optsEl = document.getElementById('opts'), scoreEl = document.getElementById('score'), msg = document.getElementById('msg'), cvs = document.getElementById('cvs'), ctx = cvs.getContext('2d', { willReadFrequently: true });
-        let pLeft = 390, pTop = 420, score = 0, gameActive = false, activeObs = null;
+        let pLeft = 40, pTop = 520, score = 0, gameActive = false, activeObs = null;
 
-        // --- 1. ITT ÁLLÍTSD BE A SAJÁT ÚTVONALAD FIX RGB SZÍNÉT ---
-        const TR = 202, TG = 31, TB = 52; // Ez most alapértelmezetten a zöld
+        // 1. ÁLLÍTSD BE AZ ÚTVONALAD PONTOS RGB SZÍNÉT (Pl. zöld: 46, 204, 113)
+        const TR = 46, TG = 204, TB = 113; 
 
-        // --- 2. SAJÁT TÉRKÉP KÉP BETÖLTÉSE ---
+        // 2. KÉP BETÖLTÉSE A LÁTHATATLAN MEMÓRIÁBA A SZÍNES ELLENŐRZÉSHEZ
         const mapImg = new Image();
-        mapImg.src = 'utvonal.png'; // Tedd be a terkep.jpg-t a HTML mellé GitHubra!
-        mapImg.crossOrigin = "anonymous"; // GitHub Pages-en ez engedélyezi a biztonságos beolvasást
+        mapImg.src = 'terkep.png'; 
+        mapImg.crossOrigin = "anonymous"; 
         
-        mapImg.onload = function() { 
-            // 1. Először letöröljük a vásznat teljesen tisztára (átlátszóra)
-            ctx.clearRect(0, 0, 800, 600);
-            
-            // 2. Kirajzoljuk a háttérképet a legalsó rétegre
-            ctx.drawImage(mapImg, 0, 0, 800, 600); 
-            
-            // 3. Opcionális: Ha az átlátszó PNG-den rajta van már a görbe út a fix RGB színnel,
-            // akkor itt készen is vagyunk! Ha programmal szeretnél rárajzolni pluszban egy utat, 
-            // akkor azt ide lehetne beilleszteni.
-            
+        mapImg.onload = function() {
+            ctx.drawImage(mapImg, 0, 0, 800, 600);
             gameActive = true; 
-        };
-        
-        // Ha nincs kép (helyi tesztelésnél), rajzol egy vékony görbe zöld vonalat, hogy lásd a működést:
-
-		
-        mapImg.onerror = function() {
-            // Ha a terkep.jpg/png nem tölthető be, akkor sem hagyjuk üresen
-            ctx.fillStyle = "#dfcb9e"; ctx.fillRect(0, 0, 800, 600);
-            ctx.strokeStyle = `rgb(${TR},${TG},${TB})`; ctx.lineWidth = 14; ctx.lineCap = "round"; ctx.lineJoin = "round";
-            ctx.beginPath(); ctx.moveTo(60, 540); ctx.quadraticCurveTo(200, 520, 200, 440); ctx.quadraticCurveTo(200, 300, 350, 300); ctx.bezierCurveTo(450, 300, 450, 450, 600, 350); ctx.lineTo(600, 140); ctx.lineTo(730, 60); ctx.stroke();
-            gameActive = true;
         };
 
         const obstacles = [
-            { id: 'obs-0', left: 490, top: 418, active: true },
-            { id: 'obs-1', left: 424, top: 325, active: true },
-            { id: 'obs-2', left: 668, top: 288, active: true },
-            { id: 'obs-3', left: 545, top: 262, active: true },
-            { id: 'obs-4', left: 310, top: 265, active: true }
+            { id: 'obs-0', left: 180, top: 420, active: true },
+            { id: 'obs-1', left: 260, top: 280, active: true },
+            { id: 'obs-2', left: 420, top: 200, active: true },
+            { id: 'obs-3', left: 530, top: 320, active: true },
+            { id: 'obs-4', left: 640, top: 120, active: true }
         ];
 
         const questions = [
             { q: "Melyik mozgás pályája egyenes vonalú, és a test egyenlő idők alatt egyenlő utakat tesz meg?", options: ["Egyenletesen változó mozgás", "Egyenes vonalú egyenletes mozgás", "Egyenletes körmozgás"], answer: 1 },
-            { q: "Mi a sebesség alapvető SI mértékegysége?", options: ["km/h (kilométer per óra)", "m/s (méter per szekundum)", "m/s² (méter per szekundum-négyzet)"], answer: 1 },
+            { q: "Mi a sebesség alapvető SI mértékegysége?", options: ["km/h", "m/s", "m/s²"], answer: 1 },
             { q: "Ha egy autó 2 óra alatt 120 km-t tesz meg egyenletes sebességgel, mennyi a sebessége?", options: ["60 km/h", "240 km/h", "30 km/h"], answer: 0 },
-            { q: "Mit ad meg a gyorsulás?", options: ["A megtett utat egységnyi idő alatt", "A sebességváltozás gyorsaságát", "A test teljes tömegét"], answer: 1 },
+            { q: "Mit ad meg a gyorsulás?", options: ["A megtett utat", "A sebességváltozás gyorsaságát", "A test teljes tömeget"], answer: 1 },
             { q: "Ha egy kerékpáros álló helyzetből indulva egyenletesen gyorsul, milyen mozgást végez?", options: ["Egyenes vonalú egyenletesen változó mozgást", "Egyenletes mozgást", "Rezgőmozgást"], answer: 0 }
         ];
 
@@ -103,7 +94,7 @@
             else if (e.key === 'ArrowRight') nLeft += 4;
             else return;
 
-            // 8-PONTOS ELLENŐRZÉS (A hajó élei és sarkai)
+            // 8-pontos könnyített ellenőrzés
             const checkPoints = [
                 {x: nLeft + 20, y: nTop + 20}, {x: nLeft, y: nTop}, {x: nLeft + 40, y: nTop},
                 {x: nLeft, y: nTop + 40}, {x: nLeft + 40, y: nTop + 40}, {x: nLeft + 20, y: nTop},
@@ -126,7 +117,7 @@
                 player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
                 checkCollisions();
             } else {
-                pLeft = 390; pTop = 420;
+                pLeft = 40; pTop = 520;
                 player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
                 msg.style.color = "#e74c3c"; msg.innerText = "Zátonyra futottál! Visszakerültél a startra!";
                 setTimeout(() => { if(gameActive) msg.innerText = ""; }, 1500);
@@ -134,20 +125,15 @@
         });
 
         function checkCollisions() {
-    obstacles.forEach((obs, idx) => {
-        if (obs.active && pLeft < obs.left + 30 && pLeft + 40 > obs.left && pTop < obs.top + 30 && pTop + 40 > obs.top) {
-            gameActive = false; activeObs = idx; showQuiz(idx);
+            obstacles.forEach((obs, idx) => {
+                if (obs.active && pLeft < obs.left + 30 && pLeft + 40 > obs.left && pTop < obs.top + 30 && pTop + 40 > obs.top) {
+                    gameActive = false; activeObs = idx; showQuiz(idx);
+                }
+            });
+            if (pLeft < 710 + 35 && pLeft + 40 > 710 && pTop < 40 + 35 && pTop + 40 > 40) {
+                gameActive = false; msg.style.color = "#f1c40f"; msg.innerHTML = "ELÉRTED A KINCSET! 👑<br>Arany: " + score;
+            }
         }
-    });
-    
-    // --- ITT MÓDOSÍTHATOD A KINCS HELYÉT ---
-    const kincsX = 505; // Írd át az új X koordinátára (balról mért távolság)
-    const kincsY = 190;  // Írd át az új Y koordinátára (fentről mért távolság)
-    
-    if (pLeft < kincsX + 35 && pLeft + 40 > kincsX && pTop < kincsY + 35 && pTop + 40 > kincsY) {
-        gameActive = false; msg.style.color = "#f1c40f"; msg.innerHTML = "ELÉRTED A KINCSET! 👑<br>Arany: " + score;
-    }
-}
 
         function showQuiz(idx) {
             quiz.style.display = "block"; qEl.innerText = questions[idx].q; optsEl.innerHTML = "";
@@ -163,9 +149,9 @@
                     } else {
                         score = Math.max(0, score - 10); scoreEl.innerText = score;
                         msg.style.color = "#e74c3c"; msg.innerText = "Rossz válasz! Vissza a startra!";
-                        pLeft = 390; pTop = 420; player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
+                        pLeft = 40; pTop = 520; player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
                         setTimeout(() => { msg.innerText = ""; gameActive = true; }, 2000);
-						}
+                    }
                 };
                 optsEl.appendChild(btn);
             });
