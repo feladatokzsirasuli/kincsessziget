@@ -76,23 +76,32 @@
             let nLeft = pLeft, nTop = pTop;
             if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) { e.preventDefault(); msg.innerText = ""; }
             
+            // Lépésköz: 4 pixel
             if (e.key === 'ArrowUp') nTop -= 4;
             else if (e.key === 'ArrowDown') nTop += 4;
             else if (e.key === 'ArrowLeft') nLeft -= 4;
             else if (e.key === 'ArrowRight') nLeft += 4;
             else return;
 
-            const checkPoints = [
-                {x: nLeft + 20, y: nTop + 20}, {x: nLeft, y: nTop}, {x: nLeft + 40, y: nTop},
-                {x: nLeft, y: nTop + 40}, {x: nLeft + 40, y: nTop + 40}, {x: nLeft + 20, y: nTop},
-                {x: nLeft + 20, y: nTop + 40}, {x: nLeft, y: nTop + 20}, {x: nLeft + 40, y: nTop + 20}
+            // Csak a HAJÓ KÖZEPÉT nézzük (nLeft + 20, nTop + 20)
+            const midX = nLeft + 20;
+            const midY = nTop + 20;
+
+            // TOLERANCIA: Megnézzük a közép pontot, és a körülötte lévő 5 pixeles környezetet (kereszt alakban)
+            const scanPoints = [
+                {x: midX, y: midY},
+                {x: midX - 5, y: midY},
+                {x: midX + 5, y: midY},
+                {x: midX, y: midY - 5},
+                {x: midX, y: midY + 5}
             ];
 
             let safe = false;
-            for (let pt of checkPoints) {
+            for (let pt of scanPoints) {
                 if (pt.x >= 0 && pt.x <= 800 && pt.y >= 0 && pt.y <= 600) {
                     const pix = ctx.getImageData(pt.x, pt.y, 1, 1).data;
-                    if (pix === TR && pix === TG && pix === TB) {
+                    // Ha a vizsgált pont színe egyezik a beállított TR, TG, TB színekkel
+                    if (pix[0] === TR && pix[1] === TG && pix[2] === TB) {
                         safe = true;
                         break;
                     }
@@ -104,10 +113,13 @@
                 player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
                 checkCollisions();
             } else {
-                pLeft = 378; pTop = 397;
-                player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
-                msg.style.color = "#e74c3c"; msg.innerText = "Zátonyra futottál! Visszakerültél a startra!";
-                setTimeout(() => { if(gameActive) msg.innerText = ""; }, 1500);
+                // Csak akkor dobjuk vissza a startra, ha már elindult és TÉNYLEG letért az útról
+                if (pLeft !== 40 || pTop !== 520) {
+                    pLeft = 40; pTop = 520; // Ide írd az új kezdőpontod koordinátáit, ha megváltoztatod!
+                    player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
+                    msg.style.color = "#e74c3c"; msg.innerText = "Zátonyra futottál! Visszakerültél a startra!";
+                    setTimeout(() => { if(gameActive) msg.innerText = ""; }, 1500);
+                }
             }
         });
 
