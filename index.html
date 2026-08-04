@@ -12,7 +12,7 @@
         #player { width: 40px; height: 40px; position: absolute; left: 40px; top: 520px; z-index: 10; display: flex; align-items: center; justify-content: center; }
         #player svg { width: 100%; height: 100%; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5)); }
         .obs { width: 30px; height: 30px; position: absolute; color: #c0392b; font-size: 24px; font-weight: bold; text-align: center; line-height: 30px; text-shadow: 1px 1px 3px #000; z-index: 5; }
-        #treasure { width: 35px; height: 35px; background: #f1c40f; border: 2px solid #d35400; position: absolute; right: 40px; top: 40px; z-index: 5; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 0 10px #f1c40f; }
+        #treasure { width: 50px; height: 50px; background: #f1c40f; border: 2px solid #d35400; position: absolute; left: 500px; top: 175px; z-index: 5; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 0 10px #f1c40f; }
         #quiz { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 450px; background: #34495e; color: white; padding: 20px; border-radius: 12px; display: none; text-align: center; z-index: 100; border: 3px solid #f1c40f; }
         .btn { background: #e67e22; color: white; border: none; padding: 10px; margin: 5px; font-size: 14px; cursor: pointer; border-radius: 5px; width: 90%; font-weight: bold; }
         #msg { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: bold; color: #f1c40f; text-shadow: 2px 2px #000; text-align: center; z-index: 110; width: 90%; pointer-events: none; }
@@ -42,9 +42,9 @@
     </div>
     <script>
         const player = document.getElementById('player'), quiz = document.getElementById('quiz'), qEl = document.getElementById('q'), optsEl = document.getElementById('opts'), scoreEl = document.getElementById('score'), msg = document.getElementById('msg'), cvs = document.getElementById('cvs'), ctx = cvs.getContext('2d', { willReadFrequently: true });
-        let pLeft = 40, pTop = 520, score = 0, gameActive = false, activeObs = null;
+        let pLeft = 376, pTop = 402, score = 0, gameActive = false, activeObs = null;
         // 1. ÍRD ÁT IDE A TE SAJÁT ÚTVONALAD PONTOS RGB KÓDJÁT!
-        const TR = 46, TG = 204, TB = 113; 
+        const TR = 202, TG = 31, TB = 52; 
         // 2. KÉP BETÖLTÉSE A LÁTHATATLAN MEMÓRIÁBA
         const mapImg = new Image();
         mapImg.src = 'terkep.png'; 
@@ -117,7 +117,7 @@
                     gameActive = false; activeObs = idx; showQuiz(idx);
                 }
             });
-            if (pLeft < 710 + 35 && pLeft + 40 > 710 && pTop < 40 + 35 && pTop + 40 > 40) {
+            if (pLeft < 500 + 35 && pLeft + 175 > 500 && pTop < 175 + 35 && pTop + 175 > 175) {
                 gameActive = false; msg.style.color = "#f1c40f"; msg.innerHTML = "ELÉRTED A KINCSET! 👑<br>Arany: " + score;
             }
         }
