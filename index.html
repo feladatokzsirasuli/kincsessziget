@@ -124,13 +124,21 @@
         });
 
         function checkCollisions() {
+            // 1. Akadályok ellenőrzése
             obstacles.forEach((obs, idx) => {
                 if (obs.active && pLeft < obs.left + 30 && pLeft + 40 > obs.left && pTop < obs.top + 30 && pTop + 40 > obs.top) {
                     gameActive = false; activeObs = idx; showQuiz(idx);
                 }
             });
-            if (pLeft < 378 + 35 && pLeft + 397 > 375 && pTop < 397 + 35 && pTop + 397 > 397) {
-                gameActive = false; msg.style.color = "#f1c40f"; msg.innerHTML = "ELÉRTED A KINCSET! 👑<br>Arany: " + score;
+
+            // 2. JAVÍTOTT: A kincs helyzete (X=500, Y=175), ahogy a CSS-ben megadtad
+            const kincsX = 500;
+            const kincsY = 175;
+
+            if (pLeft < kincsX + 50 && pLeft + 40 > kincsX && pTop < kincsY + 50 && pTop + 40 > kincsY) {
+                gameActive = false; 
+                msg.style.color = "#f1c40f"; 
+                msg.innerHTML = "ELÉRTED A KINCSET! 👑<br>Arany: " + score;
             }
         }
 
