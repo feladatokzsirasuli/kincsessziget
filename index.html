@@ -114,8 +114,8 @@
                 checkCollisions();
             } else {
                 // Csak akkor dobjuk vissza a startra, ha már elindult és TÉNYLEG letért az útról
-                if (pLeft !== 40 || pTop !== 520) {
-                    pLeft = 40; pTop = 520; // Ide írd az új kezdőpontod koordinátáit, ha megváltoztatod!
+                if (pLeft !== 378 || pTop !== 397) {
+                    pLeft = 378; pTop = 397; // Ide írd az új kezdőpontod koordinátáit, ha megváltoztatod!
                     player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
                     msg.style.color = "#e74c3c"; msg.innerText = "Zátonyra futottál! Visszakerültél a startra!";
                     setTimeout(() => { if(gameActive) msg.innerText = ""; }, 1500);
