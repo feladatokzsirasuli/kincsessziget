@@ -32,21 +32,19 @@
             </svg>
         </div>
         <div id="treasure">👑</div>
-        <div class="obs" id="obs-0" style="left:180px; top:420px;">X</div>
-        <div class="obs" id="obs-1" style="left:260px; top:280px;">X</div>
-        <div class="obs" id="obs-2" style="left:420px; top:200px;">X</div>
-        <div class="obs" id="obs-3" style="left:530px; top:320px;">X</div>
-        <div class="obs" id="obs-4" style="left:640px; top:120px;">X</div>
+        <div class="obs" id="obs-0" style="left:490px; top:415px;">X</div>
+        <div class="obs" id="obs-1" style="left:425px; top:325px;">X</div>
+        <div class="obs" id="obs-2" style="left:460px; top:300px;">X</div>
+        <div class="obs" id="obs-3" style="left:555px; top:260px;">X</div>
+        <div class="obs" id="obs-4" style="left:310px; top:265px;">X</div>
         <div id="quiz"><h3 id="q">?</h3><div id="opts"></div></div>
         <div id="msg">Kattints a játékra, majd indulj a nyilakkal!</div>
     </div>
     <script>
         const player = document.getElementById('player'), quiz = document.getElementById('quiz'), qEl = document.getElementById('q'), optsEl = document.getElementById('opts'), scoreEl = document.getElementById('score'), msg = document.getElementById('msg'), cvs = document.getElementById('cvs'), ctx = cvs.getContext('2d', { willReadFrequently: true });
         let pLeft = 40, pTop = 520, score = 0, gameActive = false, activeObs = null;
-
         // 1. ÍRD ÁT IDE A TE SAJÁT ÚTVONALAD PONTOS RGB KÓDJÁT!
         const TR = 46, TG = 204, TB = 113; 
-
         // 2. KÉP BETÖLTÉSE A LÁTHATATLAN MEMÓRIÁBA
         const mapImg = new Image();
         mapImg.src = 'terkep.png'; 
@@ -58,11 +56,11 @@
         };
 
         const obstacles = [
-            { id: 'obs-0', left: 180, top: 420, active: true },
-            { id: 'obs-1', left: 260, top: 280, active: true },
-            { id: 'obs-2', left: 420, top: 200, active: true },
-            { id: 'obs-3', left: 530, top: 320, active: true },
-            { id: 'obs-4', left: 640, top: 120, active: true }
+            { id: 'obs-0', left: 490, top: 415, active: true },
+            { id: 'obs-1', left: 425, top: 325, active: true },
+            { id: 'obs-2', left: 460, top: 300, active: true },
+            { id: 'obs-3', left: 555, top: 260, active: true },
+            { id: 'obs-4', left: 310, top: 265, active: true }
         ];
 
         const questions = [
