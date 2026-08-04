@@ -42,7 +42,7 @@
     </div>
     <script>
         const player = document.getElementById('player'), quiz = document.getElementById('quiz'), qEl = document.getElementById('q'), optsEl = document.getElementById('opts'), scoreEl = document.getElementById('score'), msg = document.getElementById('msg'), cvs = document.getElementById('cvs'), ctx = cvs.getContext('2d', { willReadFrequently: true });
-        let pLeft = 375, pTop = 400, score = 0, gameActive = false, activeObs = null;
+        let pLeft = 378, pTop = 397, score = 0, gameActive = false, activeObs = null;
         // 1. ÍRD ÁT IDE A TE SAJÁT ÚTVONALAD PONTOS RGB KÓDJÁT!
         const TR = 202, TG = 31, TB = 52; 
         // 2. KÉP BETÖLTÉSE A LÁTHATATLAN MEMÓRIÁBA
@@ -104,7 +104,7 @@
                 player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
                 checkCollisions();
             } else {
-                pLeft = 375; pTop = 400;
+                pLeft = 378; pTop = 397;
                 player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
                 msg.style.color = "#e74c3c"; msg.innerText = "Zátonyra futottál! Visszakerültél a startra!";
                 setTimeout(() => { if(gameActive) msg.innerText = ""; }, 1500);
@@ -117,7 +117,7 @@
                     gameActive = false; activeObs = idx; showQuiz(idx);
                 }
             });
-            if (pLeft < 375 + 35 && pLeft + 400 > 375 && pTop < 400 + 35 && pTop + 400 > 400) {
+            if (pLeft < 378 + 35 && pLeft + 397 > 375 && pTop < 397 + 35 && pTop + 397 > 397) {
                 gameActive = false; msg.style.color = "#f1c40f"; msg.innerHTML = "ELÉRTED A KINCSET! 👑<br>Arany: " + score;
             }
         }
@@ -136,7 +136,7 @@
                     } else {
                         score = Math.max(0, score - 10); scoreEl.innerText = score;
                         msg.style.color = "#e74c3c"; msg.innerText = "Rossz válasz! Vissza a startra!";
-                        pLeft = 375; pTop = 400; player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
+                        pLeft = 378; pTop = 397; player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
                         setTimeout(() => { msg.innerText = ""; gameActive = true; }, 2000);
                     }
                 };
