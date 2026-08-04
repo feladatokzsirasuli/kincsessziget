@@ -6,8 +6,7 @@
     <style>
         body { font-family: sans-serif; background: #2c1d11; color: #f5eccd; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         #ui { display: flex; justify-content: space-between; width: 800px; margin-bottom: 5px; font-weight: bold; }
-        /* KÖZVETLEN BIZTOS KÉPBETÖLTÉS A HÁTTÉRBE */
-        #map { width: 800px; height: 600px; position: relative; border: 12px solid #5c3a21; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden; background-image: url('terkep.png'); background-size: 100% 100%; }
+        #map { width: 800px; height: 600px; position: relative; border: 12px solid #5c3a21; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden; background-image: url('terkep.png'); background-size: 100% 100%; cursor: pointer; }
         #cvs { position: absolute; top:0; left:0; z-index: 1; display: none; }
         #player { width: 40px; height: 40px; position: absolute; left: 378px; top: 397px; z-index: 10; display: flex; align-items: center; justify-content: center; }
         #player svg { width: 100%; height: 100%; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5)); }
@@ -15,35 +14,22 @@
         #treasure { width: 50px; height: 50px; background: #f1c40f; border: 2px solid #d35400; position: absolute; left: 500px; top: 175px; z-index: 5; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 0 10px #f1c40f; }
         #quiz { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 450px; background: #34495e; color: white; padding: 20px; border-radius: 12px; display: none; text-align: center; z-index: 100; border: 3px solid #f1c40f; }
         .btn { background: #e67e22; color: white; border: none; padding: 10px; margin: 5px; font-size: 14px; cursor: pointer; border-radius: 5px; width: 90%; font-weight: bold; }
-
-#msg { 
-    position: absolute; 
-    top: 50%; 
-    left: 50%; 
-    transform: translate(-50%, -50%); 
-    font-size: 24px; 
-    font-weight: bold; 
-    color: #f1c40f; 
-    text-shadow: 1px 1px 2px #000; 
-    text-align: center; 
-    z-index: 110; 
-    width: 70%; /* Kicsit keskenyebb doboz, hogy jobban nézzen ki */
-    pointer-events: none; 
-
-    /* --- AZ ÚJ ÁTLÁTSZÓ SZÖVEGDOBOZ STÍLUSA --- */
-    background: rgba(44, 29, 17, 0.85); /* Félig áttetsző sötétbarna háttér (az utolsó szám a 0.85 az áttetszőség) */
-    padding: 20px 30px;                /* Belső margó, hogy a szöveg ne érjen ki a doboz szélére */
-    border-radius: 10px;               /* Lekerekített sarkok */
-    border: 2px solid #5c3a21;         /* Egy vékony barna keret a doboz körül */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5); /* Finom árnyék a doboz mögött, hogy kiemelkedjen a térképből */
-}
         
+        /* JAVÍTOTT ÜZENETDOBOZ STÍLUS */
+        #msg { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            font-size: 24px; font-weight: bold; color: #f1c40f; text-shadow: 1px 1px 2px #000; text-align: center; 
+            z-index: 110; width: 70%; pointer-events: none; 
+            background: rgba(44, 29, 17, 0.85); padding: 20px 30px; border-radius: 10px; border: 2px solid #5c3a21; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+            display: block; /* Alapból blokk, de a JavaScript fogja elrejteni/megjeleníteni */
+        }
     </style>
 </head>
 <body>
     <h1>Fizika Kaland</h1>
     <div id="ui"><div>Arany: <span id="score">0</span></div><div>Irányítás: Nyilakkal</div></div>
-    <div id="map">
+    <div id="map" onclick="clearIntro()">
         <canvas id="cvs" width="800" height="600"></canvas>
         <div id="player">
             <svg viewBox="0 0 64 64">
@@ -64,18 +50,15 @@
     </div>
     <script>
         const player = document.getElementById('player'), quiz = document.getElementById('quiz'), qEl = document.getElementById('q'), optsEl = document.getElementById('opts'), scoreEl = document.getElementById('score'), msg = document.getElementById('msg'), cvs = document.getElementById('cvs'), ctx = cvs.getContext('2d', { willReadFrequently: true });
-        let pLeft = 378, pTop = 397, score = 0, gameActive = false, activeObs = null;
-        // 1. ÍRD ÁT IDE A TE SAJÁT ÚTVONALAD PONTOS RGB KÓDJÁT!
+        
+        const sX = 378, sY = 397;
+        let pLeft = sX, pTop = sY, score = 0, gameActive = false, activeObs = null;
+
         const TR = 202, TG = 31, TB = 52; 
-        // 2. KÉP BETÖLTÉSE A LÁTHATATLAN MEMÓRIÁBA
         const mapImg = new Image();
         mapImg.src = 'terkep.png'; 
         mapImg.crossOrigin = "anonymous"; 
-        
-        mapImg.onload = function() {
-            ctx.drawImage(mapImg, 0, 0, 800, 600);
-            gameActive = true; 
-        };
+        mapImg.onload = function() { ctx.drawImage(mapImg, 0, 0, 800, 600); gameActive = true; };
 
         const obstacles = [
             { id: 'obs-0', left: 475, top: 400, active: true },
@@ -93,39 +76,40 @@
             { q: "Ha egy kerékpáros álló helyzetből indulva egyenletesen gyorsul, milyen mozgást végez?", options: ["Egyenes vonalú egyenletesen változó mozgást", "Egyenletes mozgást", "Rezgőmozgást"], answer: 0 }
         ];
 
+        // JAVÍTOTT: Kattintásra azonnal eltűnik a kezdőszöveg a dobozzal együtt
+        function clearIntro() {
+            if (msg.innerHTML.includes("Kattints")) {
+                msg.style.display = "none";
+                msg.innerHTML = "";
+            }
+        }
+
         window.addEventListener('keydown', function(e) {
             if (!gameActive) return;
             let nLeft = pLeft, nTop = pTop;
-            if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) { e.preventDefault(); msg.innerText = ""; }
+            if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) { 
+                e.preventDefault(); 
+                msg.style.display = "none"; // Elrejtjük a dobozt mozgás közben
+                msg.innerHTML = ""; 
+            }
             
-            // Lépésköz: 4 pixel
             if (e.key === 'ArrowUp') nTop -= 4;
             else if (e.key === 'ArrowDown') nTop += 4;
             else if (e.key === 'ArrowLeft') nLeft -= 4;
             else if (e.key === 'ArrowRight') nLeft += 4;
             else return;
 
-            // Csak a HAJÓ KÖZEPÉT nézzük (nLeft + 20, nTop + 20)
-            const midX = nLeft + 20;
-            const midY = nTop + 20;
-
-            // TOLERANCIA: Megnézzük a közép pontot, és a körülötte lévő 5 pixeles környezetet (kereszt alakban)
+            const mX = nLeft + 20, mY = nTop + 20;
             const scanPoints = [
-                {x: midX, y: midY},
-                {x: midX - 5, y: midY},
-                {x: midX + 5, y: midY},
-                {x: midX, y: midY - 5},
-                {x: midX, y: midY + 5}
+                {x: mX, y: mY}, {x: mX - 5, y: mY}, {x: mX + 5, y: mY}, {x: mX, y: mY - 5}, {x: mX, y: mY + 5}
             ];
 
             let safe = false;
             for (let pt of scanPoints) {
                 if (pt.x >= 0 && pt.x <= 800 && pt.y >= 0 && pt.y <= 600) {
                     const pix = ctx.getImageData(pt.x, pt.y, 1, 1).data;
-                    // Ha a vizsgált pont színe egyezik a beállított TR, TG, TB színekkel
                     if (pix[0] === TR && pix[1] === TG && pix[2] === TB) {
-                        safe = true;
-                        break;
+                        safe = true; break;
                     }
                 }
             }
@@ -135,32 +119,26 @@
                 player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
                 checkCollisions();
             } else {
-                // Csak akkor dobjuk vissza a startra, ha már elindult és TÉNYLEG letért az útról
-                if (pLeft !== 378 || pTop !== 397) {
-                    pLeft = 378; pTop = 397; // Ide írd az új kezdőpontod koordinátáit, ha megváltoztatod!
-                    player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
-                    msg.style.color = "#e74c3c"; msg.innerText = "Zátonyra futottál! Visszakerültél a startra!";
-                    setTimeout(() => { if(gameActive) msg.innerText = ""; }, 1500);
-                }
+                pLeft = sX; pTop = sY;
+                player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
+                msg.style.color = "#e74c3c"; 
+                msg.innerHTML = "Zátonyra futottál! Visszakerültél a startra!";
+                msg.style.display = "block"; // Zátonynál megjelenítjük a dobozt
+                setTimeout(() => { if(gameActive) { msg.style.display = "none"; msg.innerHTML = ""; } }, 1500);
             }
         });
 
         function checkCollisions() {
-            // 1. Akadályok ellenőrzése
             obstacles.forEach((obs, idx) => {
                 if (obs.active && pLeft < obs.left + 30 && pLeft + 40 > obs.left && pTop < obs.top + 30 && pTop + 40 > obs.top) {
                     gameActive = false; activeObs = idx; showQuiz(idx);
                 }
             });
-
-            // 2. JAVÍTOTT: A kincs helyzete (X=500, Y=175), ahogy a CSS-ben megadtad
-            const kincsX = 500;
-            const kincsY = 175;
-
-            if (pLeft < kincsX + 50 && pLeft + 40 > kincsX && pTop < kincsY + 50 && pTop + 40 > kincsY) {
+            if (pLeft < 500 + 50 && pLeft + 40 > 500 && pTop < 175 + 50 && pTop + 40 > 175) {
                 gameActive = false; 
                 msg.style.color = "#f1c40f"; 
                 msg.innerHTML = "ELÉRTED A KINCSET! 👑<br>Arany: " + score;
+                msg.style.display = "block"; // Kincsnél megjelenítjük a dobozt
             }
         }
 
@@ -173,13 +151,17 @@
                     if (oIdx === questions[idx].answer) {
                         score += 50; scoreEl.innerText = score;
                         obstacles[activeObs].active = false; document.getElementById(obstacles[activeObs].id).style.display = 'none';
-                        msg.style.color = "#2ecc71"; msg.innerText = "Helyes! Az út szabad!";
-                        setTimeout(() => { msg.innerText = ""; gameActive = true; }, 1500);
+                        msg.style.color = "#2ecc71"; 
+                        msg.innerHTML = "Helyes! Az út szabad!";
+                        msg.style.display = "block"; // Helyes válasznál mutatjuk a dobozt
+                        setTimeout(() => { msg.style.display = "none"; msg.innerHTML = ""; gameActive = true; }, 1500);
                     } else {
                         score = Math.max(0, score - 10); scoreEl.innerText = score;
-                        msg.style.color = "#e74c3c"; msg.innerText = "Rossz válasz! Vissza a startra!";
-                        pLeft = 378; pTop = 397; player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
-                        setTimeout(() => { msg.innerText = ""; gameActive = true; }, 2000);
+                        msg.style.color = "#e74c3c"; 
+                        msg.innerHTML = "Rossz válasz! Vissza a startra!";
+                        msg.style.display = "block"; // Rossz válasznál mutatjuk a dobozt
+                    pLeft = sX; pTop = sY; player.style.left = pLeft + 'px'; player.style.top = pTop + 'px';
+                        setTimeout(() => { msg.style.display = "none"; msg.innerHTML = ""; gameActive = true; }, 2000);
                     }
                 };
                 optsEl.appendChild(btn);
